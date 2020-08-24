@@ -18,6 +18,8 @@ const messaging = firebase.messaging();
 messaging.setBackgroundMessageHandler(function(payload){
     console.log(payload);
 
+    console.log("payload");
+
     const title = "Hello Wor1233ld";
     const options = {
         body: payload.data.status

@@ -39,15 +39,21 @@
             console.log(arr);
         });
 
-    messaging.onMessage((payload) => {
-        console.log('Message received. ', payload);
+    messaging.onMessage(function(payload) {
+        console.log("onMessage: ", payload);
+        navigator.serviceWorker.getRegistration('/sw.js').then(registration => {
+            registration.showNotification(
+                payload.notification
+            )
+        });
     });
+
 </script>
 <script>
     if ('serviceWorker' in navigator && 'PushManager' in window) {
         console.log('Service Worker and Push is supported');
 
-        navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        navigator.serviceWorker.register('/sw.js')
             .then(function(swReg) {
                 console.log('Service Worker is registered', swReg);
 
@@ -60,6 +66,7 @@
         console.warn('Push messaging is not supported');
         pushButton.textContent = 'Push Not Supported';
     }
+
 </script>
 <span id='_token'></span>
 </body>

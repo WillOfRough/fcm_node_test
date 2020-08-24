@@ -14,20 +14,16 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const messaging = firebase.messaging();
+messaging.onBackgroundMessage(payload => {
+    console.log('[firebase-messaging-sw.js] Received background message ', payload);
 
-messaging.setBackgroundMessageHandler(function(payload){
-    console.log(payload);
+    const { title, ...options } = payload.data;
 
-    console.log("payload");
-
-    const title = "Hello Wor1233ld";
-    const options = {
-        body: payload.data.status
-    };
-
-    return self.registration.showNotification(title,options);
+    return self.registration.showNotification(
+        title,
+        options
+    );
 });
-
 self.addEventListener('push', function (event)
 {
     console.log('[ServiceWorker] 푸시알림 수신: ', event);
@@ -63,5 +59,7 @@ self.addEventListener('notificationclick', function (event)
             })
     );
 });
+
+
 
 console.log('[ServiceWorker] 시작');
