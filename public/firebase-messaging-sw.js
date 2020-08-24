@@ -18,7 +18,7 @@ const messaging = firebase.messaging();
 messaging.setBackgroundMessageHandler(function(payload){
     console.log(payload);
 
-    const title = "Hello World";
+    const title = "Hello Wor1233ld";
     const options = {
         body: payload.data.status
     };
@@ -26,7 +26,7 @@ messaging.setBackgroundMessageHandler(function(payload){
     return self.registration.showNotification(title,options);
 });
 
-window.addEventListener('push', function (event)
+self.addEventListener('push', function (event)
 {
     console.log('[ServiceWorker] 푸시알림 수신: ', event);
 
@@ -34,9 +34,7 @@ window.addEventListener('push', function (event)
     var title = event.data.title || '알림';
     var body = event.data.body;
     var options = {
-        body: body,
-        icon: icon,
-        badge: badge
+        body: body
     };
 
     //Notification 출력
@@ -44,7 +42,7 @@ window.addEventListener('push', function (event)
 });
 
 //사용자가 Notification을 클릭했을 때
-window.addEventListener('notificationclick', function (event)
+self.addEventListener('notificationclick', function (event)
 {
     console.log('[ServiceWorker] 푸시알림 클릭: ', event);
 
@@ -60,9 +58,6 @@ window.addEventListener('notificationclick', function (event)
                     if (client.url == '/' && 'focus' in client)
                         return client.focus();
                 }
-                //실행된 브라우저가 없으면 Open
-                if (clients.openWindow)
-                    return clients.openWindow('https://localhost:44337/');
             })
     );
 });
