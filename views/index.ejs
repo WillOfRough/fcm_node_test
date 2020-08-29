@@ -7,64 +7,54 @@
 </head>
 <body>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.18.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.18.0/firebase-messaging.js"></script>
 <script>
-    // Initialize Firebase
-    var config = {
-        apiKey: "AIzaSyClNFoKocaycrGI42gTaBcYINw0d55t--4",
-        authDomain: "fcm-node-test-a9b79.firebaseapp.com",
-        databaseURL: "https://fcm-node-test-a9b79.firebaseio.com",
-        projectId: "fcm-node-test-a9b79",
-        storageBucket: "fcm-node-test-a9b79.appspot.com",
-        messagingSenderId: "1015332584005",
-        appId: "1:1015332584005:web:ca3292d06cd4b5bcf9012c",
-        measurementId: "G-3EJ6VQC9J1"
-    };
-    firebase.initializeApp(config);
 
-    const messaging = firebase.messaging();
-
-    //token 값 알아내기
-    messaging.requestPermission()
-        .then(function(){
-            return messaging.getToken();
-        })
-        .then(function(token){
-            console.log('token : ' + token);
-            $('#_token').html(token);
-        })
-        .catch(function(arr){
-            console.log("Error Occured");
-            console.log(arr);
-        });
-
-    messaging.onMessage(function(payload) {
-        console.log("onMessage: ", payload);
-        navigator.serviceWorker.getRegistration('/sw.js').then(registration => {
-            registration.showNotification(
-                payload.notification
-            )
-        });
-    });
-
-</script>
-<script>
+    const publicVapidKey = 'BMEBxPI85QUcEtxr-xrH2qs1Fzl6ed2h7rQKXLuXsT2cR1fcb7EuI57B69J4DxtmP3PDhaVLnP5nK-Dpa0jx_Wo';
     if ('serviceWorker' in navigator && 'PushManager' in window) {
-        console.log('Service Worker and Push is supported');
-
-        navigator.serviceWorker.register('/sw.js')
-            .then(function(swReg) {
-                console.log('Service Worker is registered', swReg);
-
-                swRegistration = swReg;
+        send().catch(err=>console.error(err));
+    }
+    async function send(){
+        console.log("보냄");
+        const register = await navigator.serviceWorker.register('/worker.js',{
+            scope:'/'
+        })
+        console.log("실행됨");
+        navigator.serviceWorker.ready.then(function(reg) {
+            reg.pushManager.getSubscription().then(function(subscription) {
+                console.log(subscription.endpoint);
             })
-            .catch(function(error) {
-                console.error('Service Worker Error', error);
-            });
-    } else {
-        console.warn('Push messaging is not supported');
-        pushButton.textContent = 'Push Not Supported';
+        });
+        console.log(Notification.permission);
+        const subscription = await register.pushManager.subscribe({
+            userVisibleOnly:true,
+            applicationServerKey:publicVapidKey
+        });
+        console.log("push");
+
+        console.log(subscription);
+
+        await fetch('/subscribe',{
+            method:'POST',
+            body:JSON.stringify(subscription),
+            headers:{
+                'content-type':'application/json'
+            }
+        });
+        console.log('Push');
+    }
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
     }
 
 </script>
