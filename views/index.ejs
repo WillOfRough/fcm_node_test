@@ -8,7 +8,6 @@
 <body>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script>
-
     const publicVapidKey = 'BMEBxPI85QUcEtxr-xrH2qs1Fzl6ed2h7rQKXLuXsT2cR1fcb7EuI57B69J4DxtmP3PDhaVLnP5nK-Dpa0jx_Wo';
     if ('serviceWorker' in navigator && 'PushManager' in window) {
         send().catch(err=>console.error(err));
@@ -30,9 +29,7 @@
             applicationServerKey:publicVapidKey
         });
         console.log("push");
-
         console.log(subscription);
-
         await fetch('/subscribe',{
             method:'POST',
             body:JSON.stringify(subscription),
@@ -41,7 +38,12 @@
             }
         });
         console.log('Push');
+        $(function(){
+            $('.change_greeting').text(subscription.endpoint);
+        });
+
     }
+
     function urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
         const base64 = (base64String + padding)
@@ -58,6 +60,7 @@
     }
 
 </script>
-<span id='_token'></span>
+<span id='cha'></span>
+<p class="change_greeting">hello</p>
 </body>
 </html>
