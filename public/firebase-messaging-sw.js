@@ -20,7 +20,7 @@ messaging.setBackgroundMessageHandler(function(payload){
 
     console.log("payload");
 
-    const title = "Hello Wor1233ld";
+    const title = "payload";
     const options = {
         body: payload.data.status
     };
