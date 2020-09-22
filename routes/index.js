@@ -73,19 +73,12 @@ router.post('/fcm_sub',(req,res)=>{
             }
           })
           if(result.length>0) {
-            let delete_query = 'DELETE FROM firebaseDB.User WHERE token = ?';
-            mysqlConnection.query(delete_query, token, (err1, result, fields) => {
+            let update_query = 'UPDATE firebaseDB.User SET email=? WHERE token=?';
+            mysqlConnection.query(update_query, [email,token], (err1, result, fields) => {
               if (err1) {
-                console.log('mysqlConnection : ' + err1);
+                console.log('update_query : ' + err1);
               } else {
-                insert_query = 'INSERT INTO firebaseDB.User(email,token,server_num) VALUES (?,?,?)';
-                mysqlConnection.query(insert_query, [email, token, 1], (err1, result, fields) => {
-                  if (err1) {
-                    console.log('mysqlConnection : ' + err1);
-                  } else {
-                    console.log('mysqlConnection finish');
-                  }
-                })
+                console.log('update_query finish');
               }
             })
           }
@@ -159,5 +152,17 @@ router.post('/subscribe',(req,res) =>{
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
+
+
+router.post('/fcm_find',(req,res) =>{
+  const subscription = req.body;
+
+  console.log(subscription);
+  res.status(201).json({});
+
+  const payload = JSON.stringify({title: 'push Test'});
+
+})
+
 module.exports = router;
 
