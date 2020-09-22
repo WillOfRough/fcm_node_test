@@ -11,7 +11,8 @@
 <script src="https://www.gstatic.com/firebasejs/7.18.0/firebase-messaging.js"></script>
 <script>
     // Initialize Firebase
-    var config = {
+    let subscription;
+    const config = {
         apiKey: "AIzaSyClNFoKocaycrGI42gTaBcYINw0d55t--4",
         authDomain: "fcm-node-test-a9b79.firebaseapp.com",
         databaseURL: "https://fcm-node-test-a9b79.firebaseio.com",
@@ -25,79 +26,97 @@
 
     const messaging = firebase.messaging();
 
+    let token ;
     //token 값 알아내기
     messaging.requestPermission()
         .then(function(){
             return messaging.getToken();
         })
-        .then(function(token){
-            console.log('token : ' + token);
-            $('#_token').html(token);
+        .then(function(r_token){
+            token=r_token
         })
         .catch(function(arr){
             console.log("Error Occured");
             console.log(arr);
         });
-
     messaging.onMessage((payload) => {
         console.log('Message received. ', payload);
+
     });
-</script>
-<script>
-    const publicVapidKey = 'BMEBxPI85QUcEtxr-xrH2qs1Fzl6ed2h7rQKXLuXsT2cR1fcb7EuI57B69J4DxtmP3PDhaVLnP5nK-Dpa0jx_Wo';
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-        send().catch(err=>console.error(err));
-    }
-    async function send(){
-        const register = await navigator.serviceWorker.register('/worker.js',{
-            scope:'/'
-        })
-        console.log("실행됨");
-        console.log(Notification.permission);
-        const subscription = await register.pushManager.subscribe({
-            userVisibleOnly:true,
-            applicationServerKey:publicVapidKey
-        });
-        navigator.serviceWorker.ready.then(function(reg) {
-            reg.pushManager.getSubscription().then(function(subscription) {
-                console.log(subscription);
-            })
-        });
-        await fetch('/subscribe',{
+
+    function button1_click() {
+        let email = document.getElementById('textarea').value ;
+        console.log(email);
+        console.log(token);
+        subscription ={
+            token : token,
+            email : email,
+            serverNum : 1
+        }
+        fetch('/fcm_sub',{
             method:'POST',
             body:JSON.stringify(subscription),
             headers:{
                 'content-type':'application/json'
             }
         });
-        console.log('Push');
-        $(function(){
-            $('.change_greeting').text(subscription.endpoint);
-        });
-        caches.keys().then(function(keyList) {
-            console.log(keyList);
-        });
-
     }
-
-    function urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding)
-            .replace(/-/g, '+')
-            .replace(/_/g, '/');
-
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-        }
-        return outputArray;
-    }
-
 </script>
+<!--<script>-->
+<!--    const publicVapidKey = 'BMEBxPI85QUcEtxr-xrH2qs1Fzl6ed2h7rQKXLuXsT2cR1fcb7EuI57B69J4DxtmP3PDhaVLnP5nK-Dpa0jx_Wo';-->
+<!--    if ('serviceWorker' in navigator && 'PushManager' in window) {-->
+<!--        send().catch(err=>console.error(err));-->
+<!--    }-->
+<!--    async function send(){-->
+<!--        const register = await navigator.serviceWorker.register('/worker.js',{-->
+<!--            scope:'/'-->
+<!--        })-->
+<!--        console.log("실행됨");-->
+<!--        console.log(Notification.permission);-->
+<!--        const subscription = await register.pushManager.subscribe({-->
+<!--            userVisibleOnly:true,-->
+<!--            applicationServerKey:publicVapidKey-->
+<!--        });-->
+<!--        navigator.serviceWorker.ready.then(function(reg) {-->
+<!--            reg.pushManager.getSubscription().then(function(subscription) {-->
+<!--                console.log(subscription);-->
+<!--            })-->
+<!--        });-->
+<!--        console.log('Push');-->
+<!--        $(function(){-->
+<!--            $('.change_greeting').text(subscription.endpoint);-->
+<!--        });-->
+<!--        caches.keys().then(function(keyList) {-->
+<!--            console.log(keyList);-->
+<!--        });-->
+
+<!--    }-->
+
+<!--    function urlBase64ToUint8Array(base64String) {-->
+<!--        const padding = '='.repeat((4 - base64String.length % 4) % 4);-->
+<!--        const base64 = (base64String + padding)-->
+<!--            .replace(/-/g, '+')-->
+<!--            .replace(/_/g, '/');-->
+
+<!--        const rawData = window.atob(base64);-->
+<!--        const outputArray = new Uint8Array(rawData.length);-->
+
+<!--        for (let i = 0; i < rawData.length; ++i) {-->
+<!--            outputArray[i] = rawData.charCodeAt(i);-->
+<!--        }-->
+<!--        return outputArray;-->
+<!--    }-->
+
+<!--</script>-->
+
+<form>
+    <p>email을 입력하세요 <textarea id = "textarea" cols="30" rows="1" ></textarea>   <input type="submit" id ="click" onclick="button1_click();" value="확인"></p>
+</form>
+
 <span id='_token'></span>
 <span id='cha'></span>
 <p class="change_greeting">hello</p>
+
+
 </body>
 </html>
