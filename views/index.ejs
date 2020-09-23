@@ -26,16 +26,16 @@
 
     const messaging = firebase.messaging();
 
-    let token ;
+    let token;
     //token 값 알아내기
     messaging.requestPermission()
-        .then(function(){
+        .then(function () {
             return messaging.getToken();
         })
-        .then(function(r_token){
-            token=r_token
+        .then(function (r_token) {
+            token = r_token
         })
-        .catch(function(arr){
+        .catch(function (arr) {
             console.log("Error Occured");
             console.log(arr);
         });
@@ -44,27 +44,42 @@
 
     });
 
-    function button1_click() {
-        let email = document.getElementById('textarea').value ;
-        console.log(email);
-        console.log(token);
-        subscription ={
-            token : token,
-            email : email,
-            serverNum : 1
-        }
-        fetch('/fcm_sub',{
-            method:'POST',
-            body:JSON.stringify(subscription),
-            headers:{
-                'content-type':'application/json'
-            }
-        });
+    async function button1_click() {
+        console.log("deleteToken");
+        await messaging.getToken().then((currentToken) => {
+            console.log(currentToken);
+            return messaging.deleteToken(currentToken);
+        })
+            .then((bool) => {
+                console.log("bool : " + bool);
+                return messaging.getToken();
+            })
+            .then((_token) => {
+                console.log("_token : " + _token);
+                let email = document.getElementById('textarea').value;
+                console.log(email);
+                console.log(_token);
+                subscription = {
+                    token: _token,
+                    email: email,
+                    serverNum: 1
+                }
+                fetch('/fcm_sub', {
+                    method: 'POST',
+                    body: JSON.stringify(subscription),
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                });
+            }).catch((error) => {
+                console.log(error);
+            });
     }
-    function fcm_find(){
-        let email = document.getElementById('textarea2').value ;
-        subscription ={
-            email : email
+
+    function fcm_find() {
+        let email = document.getElementById('textarea2').value;
+        subscription = {
+            email: email
         }
         $.ajax({
             url: "/fcm_find",
@@ -72,14 +87,33 @@
             cache: false,
             dataType: "json",
             data: subscription,
-            success: function(data){
+            success: function (data) {
                 console.log(data.result);
                 console.log("length : " + data.result.length);
             },
-            error: function (request, status, error){
+            error: function (request, status, error) {
             }
         });
     }
+
+    async function fcm_setting() {
+        console.log("deleteToken");
+        await messaging.getToken().then((currentToken) => {
+            console.log(currentToken);
+            return messaging.deleteToken(currentToken);
+        })
+            .then((bool) => {
+                console.log("bool : " + bool);
+                return messaging.getToken();
+            })
+            .then((_token) => {
+                console.log(_token);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
+
 </script>
 <!--<script>-->
 <!--    const publicVapidKey = 'BMEBxPI85QUcEtxr-xrH2qs1Fzl6ed2h7rQKXLuXsT2cR1fcb7EuI57B69J4DxtmP3PDhaVLnP5nK-Dpa0jx_Wo';-->
@@ -129,14 +163,22 @@
 <!--</script>-->
 
 <form>
-    <p>입력할 email을 입력하세요 <textarea id = "textarea" cols="30" rows="1" ></textarea>   <input type="submit" id ="click" onclick="button1_click();" value="확인"></p>
+    <p>입력할 email을 입력하세요 <textarea id="textarea" cols="30" rows="1"></textarea>
+        <button type="button" id="click" onclick="button1_click();">확인</button></p>
 </form>
 
 
 <form>
-    <p>찾을 email을 입력하세요 <textarea id = "textarea2" cols="30" rows="1" ></textarea>   <button type="button" id ="click" onclick="fcm_find();">확인</button></p>
+    <p>찾을 email을 입력하세요 <textarea id="textarea2" cols="30" rows="1"></textarea>
+        <button type="button" id="click" onclick="fcm_find();">확인</button>
+    </p>
 </form>
 
+
+<form>
+    <button type="button" id="click" onclick="fcm_setting();">확인</button>
+    </p>
+</form>
 <span id='_token'></span>
 
 
