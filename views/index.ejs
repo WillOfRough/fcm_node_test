@@ -51,14 +51,12 @@
             return messaging.deleteToken(currentToken);
         })
             .then((bool) => {
-                console.log("bool : " + bool);
                 return messaging.getToken();
             })
             .then((_token) => {
-                console.log("_token : " + _token);
                 let email = document.getElementById('textarea').value;
-                console.log(email);
-                console.log(_token);
+                console.log("token : " + _token);
+                console.log("email : " + email);
                 subscription = {
                     token: _token,
                     email: email,
@@ -171,12 +169,6 @@
 <form>
     <p>찾을 email을 입력하세요 <textarea id="textarea2" cols="30" rows="1"></textarea>
         <button type="button" id="click" onclick="fcm_find();">확인</button>
-    </p>
-</form>
-
-
-<form>
-    <button type="button" id="click" onclick="fcm_setting();">확인</button>
     </p>
 </form>
 <span id='_token'></span>
