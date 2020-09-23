@@ -13,6 +13,7 @@ firebaseAdmin.initializeApp({
   credential : firebaseAdmin.credential.cert(serviceAccount)
 });
 
+
 router.post('/fcm_sub',(req,res)=>{
 
   const mysqlConnection = mysql.createConnection({
@@ -34,7 +35,7 @@ router.post('/fcm_sub',(req,res)=>{
       console.error('mysql connection error');
       console.error(err);
     } else {
-      let select_query = 'SELECT * FROM firebaseDB.User WHERE token = ?;'
+      let select_query = 'SELECT * FROM firebaseDB.User WHERE token = ?';
       mysqlConnection.query(select_query,token,(err1,result,fields)=>{
         if(err1){
           console.log('mysqlConnection : '+err1);
@@ -156,12 +157,34 @@ router.get('/', function(req, res, next) {
 
 router.post('/fcm_find',(req,res) =>{
   const subscription = req.body;
+  let email = subscription.email;
 
-  console.log(subscription);
-  res.status(201).json({});
+  console.log("email : "+email);
 
-  const payload = JSON.stringify({title: 'push Test'});
-
+  const mysqlConnection = mysql.createConnection({
+    host: 'hancom-test.c0d1bhka4gti.ap-northeast-2.rds.amazonaws.com', //db ip address
+    port : 3306, //db port number
+    user : 'admin', //db id
+    password : '12345678', //db password
+    database:'firebaseDB' //db schema name
+  });
+  mysqlConnection.connect(function (err) {
+    if (err) {
+      console.error('mysql connection error');
+      console.error(err);
+    } else {
+      let select_query = 'SELECT * FROM firebaseDB.User WHERE email = ?';
+      mysqlConnection.query(select_query, email, (err1, result, fields) => {
+        console.log(result);
+        if (err1) {
+          console.log('select_query : ' + err1);
+        } else {
+          console.log('select_query finish');
+          res.json({result});
+        }
+      })
+    }
+  });
 })
 
 module.exports = router;
