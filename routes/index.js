@@ -48,7 +48,7 @@ router.post('/fcm_sub',(req,res)=>{
               console.log("result.length : " + result.length);
               async.forEach(result, function (users,callback) {
                 console.log("users : "+users);
-                url = 'https://iid.googleapis.com/iid/info/'+users.token+'?details=true'
+                let url = 'https://iid.googleapis.com/iid/info/'+users.token+'?details=true'
                 console.log("url : "+url);
                 fetch(url,{
                   method:'GET',
@@ -57,7 +57,9 @@ router.post('/fcm_sub',(req,res)=>{
                     'content-type':'application/json'
                   }
                 }).then((res) => {
-                  if (res.error){
+                  console.log("res : ");
+                  console.log(res.statusText);
+                  if (res.statusText == 'Not Found'){
                     fcm_delete_query = 'DELETE FROM firebaseDB.User WHERE token = ?';
                     mysqlConnection.query(fcm_delete_query,users.token,(err1,result,fields)=>{
                       if(err1){
