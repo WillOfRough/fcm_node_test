@@ -26,10 +26,12 @@ router.post('/fcm_sub', (req, res) => {
     let body = req.body;
     let email = body.email;
     let token = body.token;
+    let other = body.other;
     let insert_query;
     let fcm_delete_query;
     console.log("email : " + email);
     console.log("token : " + token);
+    console.log("token : " + other);
     mysqlConnection.connect(function (err) {
         if (err) {
             console.error('mysql connection error');
@@ -70,8 +72,8 @@ router.post('/fcm_sub', (req, res) => {
                     });
                 }
             })
-          insert_query = 'INSERT INTO firebaseDB.User(email,token,server_num) VALUES (?,?,?);';
-          mysqlConnection.query(insert_query, [email, token, 1], (err1, result, fields) => {
+          insert_query = 'INSERT INTO firebaseDB.User(email,token,server_num,other) VALUES (?,?,?,?);';
+          mysqlConnection.query(insert_query, [email, token, 1, other], (err1, result, fields) => {
             if (err1) {
               console.log('mysqlConnection : ' + err1);
             } else {
