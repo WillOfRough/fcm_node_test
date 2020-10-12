@@ -32,10 +32,55 @@
     function delete_token() {
         return messaging.deleteToken()
             .then((bool) => {
+                console.log("삭제여부 : " + bool);
+                return bool;
                 $('#pk').html("로그아웃 상태");
                 console.log("삭제여부 : " + bool);
                 return bool;
             })
+
+    }
+
+    async function response_token() {
+        let resp;
+        await messaging.getToken().then((_token) => {
+            let userId = document.getElementById('textarea').value;
+            let other = document.getElementById('other').value;
+            console.log("token : " + _token);
+            console.log("userId : " + userId);
+            console.log("other : " + other);
+            subscription = {
+                token: _token,
+                userId: userId,
+                other: other,
+                serverNum: 1
+            }
+        }).catch((error) => {
+            console.log(error);
+            return error;
+        });
+        return await fetch('/fcm_sub', {
+            method: 'POST',
+            body: JSON.stringify(subscription),
+            headers: {
+                'content-type': 'application/json'
+            }
+        }).then((result) => {
+            resp = result;
+            console.log(result.status);
+            return result.status;
+        });
+    }
+
+    async function button1_click() {
+        let result = await response_token();
+        console.log("result : " + result);
+        if (result == 201) {
+            let bool = await delete_token();
+            if(bool){
+                await response_token();
+            }
+        }
     }
 
     async function response_token() {
@@ -191,6 +236,11 @@
     <p>찾을 ID를 입력하세요 <textarea id="textarea2" cols="30" rows="1"></textarea>
         <button type="button" id="click" onclick="fcm_find();">확인</button>
     </p>
+</form>
+<span id='_token'></span>
+
+<form>
+    <button type="button" id="click" onclick="delete_token();">삭제(로그아웃)</button>
 </form>
 <span id='pk'>로그아웃 상태</span>
 
