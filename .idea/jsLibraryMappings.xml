@@ -2,5 +2,7 @@
 <project version="4">
   <component name="JavaScriptLibraryMappings">
     <includedPredefinedLibrary name="Node.js Core" />
+    <excludedPredefinedLibrary name="fcm_node_test/hms/hms-dashboard/node_modules" />
+    <excludedPredefinedLibrary name="fcm_node_test/hms/hms/node_modules" />
   </component>
 </project>
