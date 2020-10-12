@@ -13,8 +13,7 @@ firebaseAdmin.initializeApp({
     credential: firebaseAdmin.credential.cert(serviceAccount)
 });
 
-
-router.post('/fcm_sub', (req, res) => {
+router.post('/search_fcm', (req, res) => {
 
     const mysqlConnection = mysql.createConnection({
         host: 'hancom-test.c0d1bhka4gti.ap-northeast-2.rds.amazonaws.com', //db ip address
@@ -23,24 +22,13 @@ router.post('/fcm_sub', (req, res) => {
         password: '12345678', //db password
         database: 'firebaseDB' //db schema name
     });
-    let body = req.body;
-    let email = body.email;
-    let before_token = body.before_token;
-    let token = body.token;
-    let other = body.other;
-    let insert_query;
-    let fcm_delete_query;
-    let delete_query;
-    console.log("email : " + email);
-    console.log("token : " + token);
-    console.log("token : " + other);
     mysqlConnection.connect(function (err) {
         if (err) {
             console.error('mysql connection error');
             console.error(err);
         } else {
-            let select_query = 'SELECT * FROM firebaseDB.User WHERE email = ?';
-            mysqlConnection.query(select_query, email, (err1, result, fields) => {
+            let select_query = 'SELECT * FROM firebaseDB.User';
+            mysqlConnection.query(select_query, (err1, result, fields) => {
                 if (err1) {
                     console.log('mysqlConnection : ' + err1);
                 } else {
@@ -59,7 +47,7 @@ router.post('/fcm_sub', (req, res) => {
                             console.log("res : ");
                             console.log(res.statusText);
                             if (res.statusText == 'Not Found') {
-                                fcm_delete_query = 'DELETE FROM firebaseDB.User WHERE token = ?';
+                                var fcm_delete_query = 'DELETE FROM firebaseDB.User WHERE token = ?';
                                 mysqlConnection.query(fcm_delete_query, users.token, (err1, result, fields) => {
                                     if (err1) {
                                         console.log('fcm_delete_query : ' + err1);
@@ -74,26 +62,79 @@ router.post('/fcm_sub', (req, res) => {
                     });
                 }
             })
-            insert_query = 'INSERT INTO firebaseDB.User(email,token,server_num,other) VALUES (?,?,?,?);';
-            mysqlConnection.query(insert_query, [email, token, 1, other], (err1, result, fields) => {
-                if (err1) {
-                    console.log('mysqlConnection : ' + err1);
-                } else {
-                    console.log('mysqlConnection finish');
-                }
-            })
-            delete_query = 'DELETE FROM firebaseDB.User WHERE token = ?';
-            mysqlConnection.query(delete_query, before_token, (err1, result, fields) => {
-                if (err1) {
-                    console.log('mysqlConnection : ' + err1);
-                } else {
-                    console.log('mysqlConnection finish');
-                }
-            })
-            console.log('mysqlConnection finish');
         }
     });
     res.status(201).json({});
+});
+
+router.post('/fcm_sub', (req, res) => {
+
+    const mysqlConnection = mysql.createConnection({
+        host: 'hancom-test.c0d1bhka4gti.ap-northeast-2.rds.amazonaws.com', //db ip address
+        port: 3306, //db port number
+        user: 'admin', //db id
+        password: '12345678', //db password
+        database: 'firebaseDB' //db schema name
+    });
+    let body = req.body;
+    let userId = body.userId;
+    let token = body.token;
+    let other = body.other;
+    let insert_query;
+    let delete_query;
+
+    let code = 200;
+    console.log("userId : " + userId);
+    console.log("token : " + token);
+    console.log("other : " + other);
+    mysqlConnection.connect(function (err) {
+        if (err) {
+            console.error('mysql connection error');
+            console.error(err);
+        } else {
+            let token_select_query = 'SELECT * FROM firebaseDB.User WHERE token = ?';
+            mysqlConnection.query(token_select_query, token, (err1, result, fields) => {
+                if (err1) {
+                    console.log('mysqlConnection : ' + err1);
+                } else {
+                    console.log("result : "+result.length);
+                    if(result.length>0){
+                        console.log("토큰 중복");
+                        console.log("result.user_id : "+result[0].user_id);
+                        if(result[0].user_id == userId){
+                            console.log("아이디 중복");
+                            res.status(code).json({});
+                        }
+                        else{
+                            delete_query = 'DELETE FROM firebaseDB.User WHERE token = ?';
+                            mysqlConnection.query(delete_query, token, (err1, result, fields) => {
+                                if (err1) {
+                                    console.log('mysqlConnection : ' + err1);
+                                } else {
+                                    console.log('delete_query finish');
+                                }
+                            })
+                            code = 201;
+                            res.status(code).json({});
+                        }
+                    }
+                    else{
+                        insert_query = 'INSERT INTO firebaseDB.User(user_id,token,server_num,other) VALUES (?,?,?,?);';
+                        mysqlConnection.query(insert_query, [userId, token, 1, other], (err1, result, fields) => {
+                            if (err1) {
+                                console.log('mysqlConnection : ' + err1);
+                            } else {
+                                console.log('mysqlConnection finish');
+                            }
+                        })
+                        console.log('insert_query');
+                        res.status(code).json({});
+                    }
+                    console.log('mysqlConnection finish');
+                }
+            })
+        }
+    });
 });
 
 router.get('/fcm_send', (req, res) => {
@@ -146,9 +187,9 @@ router.get('/', function (req, res, next) {
 
 router.post('/fcm_find', (req, res) => {
     const subscription = req.body;
-    let email = subscription.email;
+    let userId = subscription.userId;
 
-    console.log("email : " + email);
+    console.log("userId : " + userId);
 
     const mysqlConnection = mysql.createConnection({
         host: 'hancom-test.c0d1bhka4gti.ap-northeast-2.rds.amazonaws.com', //db ip address
@@ -162,8 +203,8 @@ router.post('/fcm_find', (req, res) => {
             console.error('mysql connection error');
             console.error(err);
         } else {
-            let select_query = 'SELECT * FROM firebaseDB.User WHERE email = ?';
-            mysqlConnection.query(select_query, email, (err1, result, fields) => {
+            let select_query = 'SELECT * FROM firebaseDB.User WHERE user_id = ?';
+            mysqlConnection.query(select_query, userId, (err1, result, fields) => {
                 console.log(result);
                 if (err1) {
                     console.log('select_query : ' + err1);

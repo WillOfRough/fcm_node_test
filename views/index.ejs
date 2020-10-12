@@ -27,64 +27,63 @@
     const messaging = firebase.messaging();
 
     let token;
-    //token 값 알아내기
-    messaging.requestPermission()
-        .then(function () {
-            return messaging.getToken();
-        })
-        .then(function (r_token) {
-            token = r_token
-        })
-        .catch(function (arr) {
-            console.log("Error Occured");
-            console.log(arr);
-        });
-    messaging.onMessage((payload) => {
-        console.log('Message received. ', payload);
+    messaging.requestPermission();      //알람 허용 여부
 
-    });
+    function delete_token() {
+        return messaging.deleteToken()
+            .then((bool) => {
+                console.log("삭제여부 : " + bool);
+                return bool;
+            })
+
+    }
+
+    async function response_token() {
+        let resp;
+        await messaging.getToken().then((_token) => {
+            let userId = document.getElementById('textarea').value;
+            let other = document.getElementById('other').value;
+            console.log("token : " + _token);
+            console.log("userId : " + userId);
+            console.log("other : " + other);
+            subscription = {
+                token: _token,
+                userId: userId,
+                other: other,
+                serverNum: 1
+            }
+        }).catch((error) => {
+            console.log(error);
+            return error;
+        });
+        return await fetch('/fcm_sub', {
+            method: 'POST',
+            body: JSON.stringify(subscription),
+            headers: {
+                'content-type': 'application/json'
+            }
+        }).then((result) => {
+            resp = result;
+            console.log(result.status);
+            return result.status;
+        });
+    }
 
     async function button1_click() {
-        let before_token;
-        console.log("deleteToken");
-        await messaging.getToken().then((currentToken) => {
-            before_token = currentToken;
-            console.log(currentToken);
-            return messaging.deleteToken(currentToken);
-        })
-            .then((bool) => {
-                return messaging.getToken();
-            })
-            .then((_token) => {
-                let email = document.getElementById('textarea').value;
-                let other = document.getElementById('other').value;
-                console.log("before_token : " + before_token);
-                console.log("token : " + _token);
-                console.log("email : " + email);
-                console.log("other : " + other);
-                subscription = {
-                    before_token: before_token,
-                    token: _token,
-                    email: email,
-                    other: other,
-                    serverNum: 1
-                }
-                fetch('/fcm_sub', {
-                    method: 'POST',
-                    body: JSON.stringify(subscription),
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                });
-            }).catch((error) => {
-                console.log(error);
-            });
+        let result = await response_token();
+        console.log("result : " + result);
+        if (result == 201) {
+            let bool = await delete_token();
+            if(bool){
+                await response_token();
+            }
+        }
     }
 
     function fcm_find() {
-        let email = document.getElementById('textarea2').value;
+        let userId = document.getElementById('textarea2').value;
         subscription = {
-            email: email
+            userId: userId
         }
         $.ajax({
             url: "/fcm_find",
@@ -102,16 +101,24 @@
         });
     }
 
+    messaging.onMessage((payload) => {
+        console.log('Message received. ', payload);
+    });
+
+    messaging.onTokenRefresh(() => {
+        //When the token is updated, onTokenRefresh is called.
+        messaging.getToken().then((refreshedToken) => {
+            console.log("refreshedToken : " + refreshedToken);
+        }).catch((err) => {
+            console.log('Unable to retrieve refreshed token ', err);
+        });
+    });
+
     async function fcm_setting() {
         console.log("deleteToken");
-        await messaging.getToken().then((currentToken) => {
-            console.log(currentToken);
-            return messaging.deleteToken(currentToken);
+        await messaging.deleteToken().then((bool) => {
+            return messaging.getToken();
         })
-            .then((bool) => {
-                console.log("bool : " + bool);
-                return messaging.getToken();
-            })
             .then((_token) => {
                 console.log(_token);
             })
@@ -186,6 +193,8 @@
 </form>
 <span id='_token'></span>
 
-
+<form>
+    <button type="button" id="click" onclick="delete_token();">삭제(로그아웃)</button>
+</form>
 </body>
 </html>
