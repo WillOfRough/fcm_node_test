@@ -23,6 +23,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8d714556-10b7-4149-a558-b65b8cde6866" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../../public/write.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../routes/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../routes/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../views/index.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/../../views/index.ejs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -94,6 +96,7 @@
       <workItem from="1601878755295" duration="1228000" />
       <workItem from="1602036450189" duration="19871000" />
       <workItem from="1602462260256" duration="361000" />
+      <workItem from="1602462891302" duration="17508000" />
       <workItem from="1602462891302" duration="17828000" />
     </task>
     <servers />
