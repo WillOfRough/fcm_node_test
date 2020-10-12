@@ -32,16 +32,17 @@
     function delete_token() {
         return messaging.deleteToken()
             .then((bool) => {
+                $('#pk').html("로그아웃 상태");
                 console.log("삭제여부 : " + bool);
                 return bool;
             })
-
     }
 
     async function response_token() {
         let resp;
         await messaging.getToken().then((_token) => {
             let userId = document.getElementById('textarea').value;
+            $('#pk').html("로그인 아이디 : " + userId);
             let other = document.getElementById('other').value;
             console.log("token : " + _token);
             console.log("userId : " + userId);
@@ -191,7 +192,7 @@
         <button type="button" id="click" onclick="fcm_find();">확인</button>
     </p>
 </form>
-<span id='_token'></span>
+<span id='pk'>로그아웃 상태</span>
 
 <form>
     <button type="button" id="click" onclick="delete_token();">삭제(로그아웃)</button>
