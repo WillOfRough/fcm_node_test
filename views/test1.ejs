@@ -9,95 +9,39 @@
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.18.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.18.0/firebase-messaging.js"></script>
-<script>
-    // Initialize Firebase
-    var config = {
-        apiKey: "AIzaSyClNFoKocaycrGI42gTaBcYINw0d55t--4",
-        authDomain: "fcm-node-test-a9b79.firebaseapp.com",
-        databaseURL: "https://fcm-node-test-a9b79.firebaseio.com",
-        projectId: "fcm-node-test-a9b79",
-        storageBucket: "fcm-node-test-a9b79.appspot.com",
-        messagingSenderId: "1015332584005",
-        appId: "1:1015332584005:web:ca3292d06cd4b5bcf9012c",
-        measurementId: "G-3EJ6VQC9J1"
-    };
-    firebase.initializeApp(config);
-
-    const messaging = firebase.messaging();
-
-    //token 값 알아내기
-    messaging.requestPermission()
-        .then(function(){
-            return messaging.getToken();
-        })
-        .then(function(token){
-            console.log('token : ' + token);
-            $('#_token').html(token);
-        })
-        .catch(function(arr){
-            console.log("Error Occured");
-            console.log(arr);
-        });
-
-    messaging.onMessage((payload) => {
-        console.log('Message received. ', payload);
-    });
-</script>
-<script>
-    const publicVapidKey = 'BMEBxPI85QUcEtxr-xrH2qs1Fzl6ed2h7rQKXLuXsT2cR1fcb7EuI57B69J4DxtmP3PDhaVLnP5nK-Dpa0jx_Wo';
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-        send().catch(err=>console.error(err));
-    }
-    async function send(){
-        const register = await navigator.serviceWorker.register('/worker.js',{
-            scope:'/'
-        })
-        console.log("실행됨");
-        console.log(Notification.permission);
-        const subscription = await register.pushManager.subscribe({
-            userVisibleOnly:true,
-            applicationServerKey:publicVapidKey
-        });
-        navigator.serviceWorker.ready.then(function(reg) {
-            reg.pushManager.getSubscription().then(function(subscription) {
-                console.log(subscription);
-            })
-        });
-        await fetch('/subscribe',{
-            method:'POST',
-            body:JSON.stringify(subscription),
-            headers:{
-                'content-type':'application/json'
-            }
-        });
-        console.log('Push');
-        $(function(){
-            $('.change_greeting').text(subscription.endpoint);
-        });
-        caches.keys().then(function(keyList) {
-            console.log(keyList);
-        });
-
-    }
-
-    function urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding)
-            .replace(/-/g, '+')
-            .replace(/_/g, '/');
-
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
+<script src="login.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () { //실행될 코드 });
+        loginCheck();
+        if (getSessionId()) {
+            $('#pk').html("로그인 아이디 : " + getUserEmail());
+        } else {
+            $('#pk').html("로그아웃상태");
         }
-        return outputArray;
+    });
+
+    function loginCheck() {
+        if (isLoggedIn()) {
+            $('#login_button').hide();
+            $('#logout_button').show();
+        } else {
+            $('#login_button').show();
+            $('#logout_button').hide();
+        }
+    }
+
+    function loginButton() {
+        window.location.href = loginURL();
+    }
+
+    function logoutButton() {
+        localStorage.clear()
+        window.location.href = logoutURL();
     }
 
 </script>
-<span id='_token'></span>
-<span id='cha'></span>
-<p class="change_greeting">hello</p>
+<span id='pk'>로그아웃 상태</span>
+<button id="login_button" onclick="loginButton()">로그인</button>
+<button id="logout_button" onclick="logoutButton()">로그아웃</button>
 </body>
 </html>
